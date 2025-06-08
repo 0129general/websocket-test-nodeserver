@@ -93,13 +93,14 @@ app.post("/notify", NotifyUsers);
 
 // Test endpoint for creating orders
 app.post("/test-order", express.json(), (req, res) => {
+  const payload = req.body;
   const testOrder = {
-    kitchen_name: req.body.kitchen_name || "test_kitchen",
+    // kitchen_name: req.body.kitchen_name || "test_kitchen",
+    ...payload,
     order_id: Date.now(),
     internal_order_status: "pending",
     delivery_date: new Date().toISOString().split("T")[0],
   };
-
   const mockReq = {
     body: {
       data: testOrder,
