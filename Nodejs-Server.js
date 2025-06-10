@@ -89,6 +89,37 @@ app.use((req, res, next) => {
 });
 
 // Routes
+// in server.js or a routes file
+const { kitchenClients } = require("./sseClients");
+
+app.get("/sse/kitchen/:kitchenName", (req, res) => {
+  const kitchenName = req.params.kitchenName;
+
+  // Set SSE headers
+  res.set({
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+  });
+
+  res.flushHeaders();
+
+  // Keep connection alive
+  const keepAlive = setInterval(() => {
+    res.write(`:\n\n`);
+  }, 15000); // 15 sec ping
+
+  kitchenClients.set(kitchenName, res);
+  console.log(`👨‍🍳 Kitchen SSE connected: ${kitchenName}`);
+
+  req.on("close", () => {
+    console.log(`❌ Kitchen SSE disconnected: ${kitchenName}`);
+    kitchenClients.delete(kitchenName);
+    clearInterval(keepAlive);
+  });
+});
+
+// Endpoint to notify users (kitchen, driver, etc.)
 app.post("/notify", NotifyUsers);
 
 // Test endpoint for creating orders
