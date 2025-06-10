@@ -95,27 +95,22 @@ const { kitchenClients } = require("./sseClients");
 app.get("/sse/kitchen/:kitchenName", (req, res) => {
   const kitchenName = req.params.kitchenName;
 
-  // Set SSE headers
   res.set({
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
     Connection: "keep-alive",
   });
-
   res.flushHeaders();
 
-  // Keep connection alive
-  const keepAlive = setInterval(() => {
-    res.write(`:\n\n`);
-  }, 15000); // 15 sec ping
+  const { addSSEClient, removeSSEClient } = require("./sseClients");
+  addSSEClient(kitchenName, res);
 
-  kitchenClients.set(kitchenName, res);
-  console.log(`👨‍🍳 Kitchen SSE connected: ${kitchenName}`);
+  const keepAlive = setInterval(() => res.write(":\n\n"), 15000);
 
   req.on("close", () => {
-    console.log(`❌ Kitchen SSE disconnected: ${kitchenName}`);
-    kitchenClients.delete(kitchenName);
     clearInterval(keepAlive);
+    removeSSEClient(kitchenName, res);
+    console.log(`🔌 SSE disconnected: ${kitchenName}`);
   });
 });
 

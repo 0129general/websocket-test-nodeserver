@@ -23,15 +23,17 @@ async function NotifyUsers(req, res, next) {
       let messageDelivered = false;
 
       if (useSSE) {
-        console.log(`🔔 Notifying kitchen: ${kitchenName}`, data);
-        console.log("kitchenClients:", kitchenClients);
-        const sseConnection = kitchenClients.get(kitchenName);
-        if (sseConnection) {
-          sseConnection.write(`data: ${JSON.stringify(data)}\n\n`);
-          console.log(`📦 Sent to ${kitchenName} via SSE`);
+        const clients = kitchenClients.get(kitchenName);
+        if (clients && clients.size > 0) {
+          for (const clientRes of clients) {
+            clientRes.write(`data: ${JSON.stringify(data)}\n\n`);
+          }
+          console.log(
+            `📦 SSE: sent to ${clients.size} clients for ${kitchenName}`
+          );
           messageDelivered = true;
         } else {
-          console.warn(`⚠️ No SSE connection found for ${kitchenName}`);
+          console.warn(`⚠️ No SSE clients for ${kitchenName}`);
         }
       } else {
         const socketId = req.clients.get(`kitchen_frontend_app_${kitchenName}`);
