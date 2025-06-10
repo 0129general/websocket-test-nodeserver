@@ -125,6 +125,7 @@ app.post("/notify", NotifyUsers);
 // Test endpoint for creating orders
 app.post("/test-order", express.json(), (req, res) => {
   const payload = req.body;
+  console.log(`Received test order payload: ${JSON.stringify(payload)}`);
   const testOrder = {
     // kitchen_name: req.body.kitchen_name || "test_kitchen",
     ...payload,

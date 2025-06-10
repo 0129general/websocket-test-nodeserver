@@ -1,9 +1,13 @@
 const moment = require("moment");
 const { validationResult } = require("express-validator");
 const { missedOrders } = require("./missedOrdersStore");
+const { kitchenClients } = require("./sseClients");
 
 async function NotifyUsers(req, res, next) {
   try {
+    console.log(
+      `----NotifyUsers called at ${moment().format("YYYY-MM-DD HH:mm:ss")}`
+    );
     const { data, whomToNotify } = req.body;
     const useSSE = true;
     if (whomToNotify === "kitchen") {
@@ -19,6 +23,8 @@ async function NotifyUsers(req, res, next) {
       let messageDelivered = false;
 
       if (useSSE) {
+        console.log(`🔔 Notifying kitchen: ${kitchenName}`, data);
+        console.log("kitchenClients:", kitchenClients);
         const sseConnection = kitchenClients.get(kitchenName);
         if (sseConnection) {
           sseConnection.write(`data: ${JSON.stringify(data)}\n\n`);
